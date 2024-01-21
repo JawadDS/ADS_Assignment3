@@ -21,7 +21,8 @@ from sklearn.cluster import KMeans
 from scipy.optimize import curve_fit
 
 # Function to read data from Excel or CSV files
-def read_data(file):
+def read_data_fun(file):
+    
     """
     Read data from an Excel or CSV file.
 
@@ -32,6 +33,7 @@ def read_data(file):
     - df_clean (pd.DataFrame): Cleaned DataFrame.
     - df_t (pd.DataFrame): Transposed DataFrame.
     """
+    
     if ".xlsx" in file:
         df = pd.read_excel(file, index_col=0, delimiter=',')
     elif ".csv" in file:
@@ -46,6 +48,7 @@ def read_data(file):
     return df_clean, df_t
 
 def perform_clustering(dataframe, features, n_clusters=4):
+    
     """
     Perform KMeans clustering on specified features.
 
@@ -58,6 +61,7 @@ def perform_clustering(dataframe, features, n_clusters=4):
     - labels (np.ndarray): Cluster labels.
     - centres (np.ndarray): Cluster centres.
     """
+    
     scaler = RobustScaler()
     to_clust = dataframe[features]
     scaler.fit(to_clust)
@@ -72,25 +76,32 @@ def perform_clustering(dataframe, features, n_clusters=4):
     return labels, centres
 
 # Define the polynomial function
+
 def poly(x, a, b, c):
     return a * x**2 + b * x + c
 
-GDP_Growth_data, GDP_Growth_Transposed = read_data("GDP_Growth.csv")
-Gross_Savings_data, Gross_Savings_Transposed = read_data("Gross_Savings.csv")
+#Calling read_data function to read data 
+
+GDP_Growth_data, GDP_Growth_Transposed = read_data_fun("GDP_Growth.csv")
+Gross_Savings_data, Gross_Savings_Transposed = read_data_fun("Gross_Savings.csv")
 
 # Extract GDP Growth and Gross Savings for Pakistan
+
 GDP_Growth_Pak = GDP_Growth_Transposed.loc['1990':'2020', 'Pakistan'].copy()
 Gross_Savings_Pak = Gross_Savings_Transposed.loc['1990':'2020', 'Pakistan'].copy()
 
 # Merge and set index for the DataFrame
+
 df_Pakistan = pd.merge(GDP_Growth_Pak, Gross_Savings_Pak, on=GDP_Growth_Pak.index, how="outer")
 df_Pakistan.rename(columns={'key_0':'Years', 'Pakistan_x': 'GDP Growth', 'Pakistan_y': 'Gross Savings'}, inplace=True)
 df_Pakistan = df_Pakistan.set_index('Years')
 
 # Perform clustering
+
 cluster_labels, cluster_centres = perform_clustering(df_Pakistan, ["GDP Growth", "Gross Savings"], n_clusters=4)
 
 # Scatter plot with clustering results
+
 plt.scatter(df_Pakistan["GDP Growth"], df_Pakistan["Gross Savings"], 10, cluster_labels, marker="o", cmap='viridis')
 plt.scatter(cluster_centres[:, 0], cluster_centres[:, 1], 45, "k", marker="d")
 plt.gca().set_facecolor('#F8CBAD')
@@ -100,32 +111,40 @@ plt.title("GDP Growth vs Gross Savings (Pakistan) with Clustering")
 plt.show()
 
 # Prepare DataFrame for fitting
+
 df_Pakistan = df_Pakistan.reset_index()
 df_Pakistan["GDP Growth"] = pd.to_numeric(df_Pakistan["GDP Growth"])
 df_Pakistan["Years"] = pd.to_numeric(df_Pakistan["Years"])
 
 # Extract features and target for curve fitting
+
 years = df_Pakistan['Years'].values
 gdp_growth = df_Pakistan['GDP Growth'].values
 gross_savings = df_Pakistan['Gross Savings'].values
 
 # Curve fitting for GDP Growth
+
 params_gdp, _ = curve_fit(poly, years, gdp_growth)
 
 # Curve fitting for Gross Savings
+
 params_savings, _ = curve_fit(poly, years, gross_savings)
 
 # Generate future years for forecasting
+
 future_years = np.arange(1990, 2031)
 
 # Forecast GDP Growth and Gross Savings
+
 forecast_gdp = poly(future_years, *params_gdp)
 forecast_savings = poly(future_years, *params_savings)
 
 # Plotting
+
 plt.figure(figsize=(12, 6))
 
 # Plot GDP Growth
+
 plt.subplot(1, 2, 1)
 plt.scatter(df_Pakistan['Years'], df_Pakistan['GDP Growth'], label='Actual Data (GDP Growth)', c='blue')
 plt.plot(future_years, forecast_gdp, label='Forecasted GDP Growth', c='red')
@@ -136,6 +155,7 @@ plt.title('GDP Growth Forecast for Pakistan')
 plt.legend()
 
 # Plot Gross Savings
+
 plt.subplot(1, 2, 2)
 plt.scatter(df_Pakistan['Years'], df_Pakistan['Gross Savings'], label='Actual Data (Gross Savings)', c='green')
 plt.plot(future_years, forecast_savings, label='Forecasted Gross Savings', c='orange')
@@ -149,9 +169,11 @@ plt.tight_layout()
 plt.show()
 
 # Additional line plot for both GDP Growth and Gross Savings
+
 plt.figure(figsize=(12, 6))
 
 # Line plot for GDP Growth
+
 plt.plot(df_Pakistan['Years'], df_Pakistan['GDP Growth'], label='GDP Growth', c='blue')
 plt.gca().set_facecolor('#F8CBAD')
 plt.xlabel('Years')
@@ -160,6 +182,7 @@ plt.title('GDP Growth and Gross Savings for Pakistan (1990 to 2020)')
 plt.legend(loc='upper left')
 
 # Create a second y-axis for Gross Savings on the right
+
 ax2 = plt.gca().twinx()
 ax2.plot(df_Pakistan['Years'], df_Pakistan['Gross Savings'], label='Gross Savings', c='green')
 ax2.set_ylabel('Gross Savings')
