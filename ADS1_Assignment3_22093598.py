@@ -1,3 +1,17 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Sun Jan 21 16:23:26 2024
+
+@author: Jay
+
+ Data Information:
+ The data utilized in this experiment has been sourced from the World Bank database. Following the cleaning process,
+ the modified datasets have been uploaded to my GitHub repository to ensure smooth execution of the provided code.
+ Please download the dataset files from the following GitHub link: 
+ https://github.com/JawadDS/ADS_Assignment3
+
+"""
+
 # Import necessary libraries
 import numpy as np
 import pandas as pd
@@ -61,8 +75,8 @@ def perform_clustering(dataframe, features, n_clusters=4):
 def poly(x, a, b, c):
     return a * x**2 + b * x + c
 
-GDP_Growth_data, GDP_Growth_Transposed = read_data("https://raw.githubusercontent.com/JawadDS/ADS_Assignment3/main/API_NY.GDP.MKTP.KD.ZG_DS2_en_csv_v2_6298243.csv")
-Gross_Savings_data, Gross_Savings_Transposed = read_data("https://raw.githubusercontent.com/JawadDS/ADS_Assignment3/main/API_NY.GNS.ICTR.ZS_DS2_en_csv_v2_6298647.csv")
+GDP_Growth_data, GDP_Growth_Transposed = read_data("GDP_Growth.csv")
+Gross_Savings_data, Gross_Savings_Transposed = read_data("Gross_Savings.csv")
 
 # Extract GDP Growth and Gross Savings for Pakistan
 GDP_Growth_Pak = GDP_Growth_Transposed.loc['1990':'2020', 'Pakistan'].copy()
@@ -77,7 +91,6 @@ df_Pakistan = df_Pakistan.set_index('Years')
 cluster_labels, cluster_centres = perform_clustering(df_Pakistan, ["GDP Growth", "Gross Savings"], n_clusters=4)
 
 # Scatter plot with clustering results
-#cm = ['red', 'blue', 'green', 'purple']
 plt.scatter(df_Pakistan["GDP Growth"], df_Pakistan["Gross Savings"], 10, cluster_labels, marker="o", cmap='viridis')
 plt.scatter(cluster_centres[:, 0], cluster_centres[:, 1], 45, "k", marker="d")
 plt.gca().set_facecolor('#F8CBAD')
